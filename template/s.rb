@@ -12,7 +12,7 @@ def input_exists(filename)
     glob = "*-large.in"
   end
   if glob
-    result = Dir.glob("*-large.in")[0]
+    result = Dir.glob(glob)[0]
   end
   abort("Input file #{result ? result : glob} not found.") unless result && File.exist?(result)
   
@@ -24,26 +24,23 @@ def write_output_line(i, data)
 end
 
 def write_output_file(filename, data)
-  i = 1
   File.open(filename, 'w') do |file|
-    data.each do |a_case|
-      file.puts(write_output_line(i, a_case))
-      i += 1
+    data.each_with_index do |a_case, i|
+      file.puts(write_output_line(i+1, a_case))
     end
   end
 end
 
 def read_input_file(filename)
-  test_count = 0
   cases = []
   File.open(filename) do |file| 
     test_count = file.readline.chomp.to_i
     file.each_line do |line|
       cases << case_from_input_line(line.chomp)
     end
+    puts "warning: the number of expected test cases does not match the actual" if test_count != cases.length 
   end
   
-  puts "warning: the number of expected test cases does not match the actual" if test_count != cases.length 
   cases
 end
 
@@ -63,20 +60,13 @@ def process_case(i, data)
   data
 end
 
-inFilename = ARGV[0]
-
-if inFilename
-  inFilename = input_exists(inFilename)
-  
+if ARGV[0]
+  inFilename = input_exists(ARGV[0])
   outFilename = inFilename.sub("\.in", ".out")
   puts "Reading from: #{inFilename}, writing to #{outFilename}"
-
   cases = read_input_file(inFilename)
-  # p cases
   processed_data = process(cases)
-  # p processed_data
   write_output_file(outFilename, processed_data)
 else
   puts "Please specify input file"
 end
-
